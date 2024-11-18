@@ -26,20 +26,16 @@ steps:
     npm run build
   displayName: 'Install dependencies and build'
 
-# Step 4: Login to ACR
-- task: Docker@2
-  inputs:
-    command: login
-    containerRegistry: 'acr-serviceconnection' # Name of your ACR service connection in Azure DevOps
 
 # Step 5: Build Docker image
 - task: Docker@2
   inputs:
     command: build
-    Dockerfile: 'Dockerfile' # Path to your Dockerfile
+    containerRegistry: 'acr-serviceconnection'
+    repository: 'Nehalkhan729'
+    Dockerfile: 'Dockerfile'
     tags: |
-      $(ACR_NAME).azurecr.io/$(IMAGE_NAME):$(TAG)
-      $(ACR_NAME).azurecr.io/$(IMAGE_NAME):latest
+      $(Build.BuildId)
 
 # Step 6: Push Docker image to ACR
 - task: Docker@2
