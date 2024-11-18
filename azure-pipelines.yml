@@ -1,19 +1,50 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
+# Trigger pipeline on commits to main
 trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'Default'
+
+variables:
+  # Replace with your ACR name (without .azurecr.io)
+  ACR_NAME: 'aksrg'
+  IMAGE_NAME: 'pharma'
+  TAG: $(Build.BuildId) # Use build ID for tagging images
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+# Step 1: Checkout code
+- task: Checkout@1
 
+# Step 2: Set up Node.js
+- task: UseNode@1
+  inputs:
+    version: '16.x' # Specify Node.js version
+
+# Step 3: Install dependencies and build
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    npm install
+    npm run build
+  displayName: 'Install dependencies and build'
+
+# Step 4: Login to ACR
+- task: Docker@2
+  inputs:
+    command: login
+    containerRegistry: 'acr-serviceconnection' # Name of your ACR service connection in Azure DevOps
+
+# Step 5: Build Docker image
+- task: Docker@2
+  inputs:
+    command: build
+    Dockerfile: 'Dockerfile' # Path to your Dockerfile
+    tags: |
+      $(ACR_NAME).azurecr.io/$(IMAGE_NAME):$(TAG)
+      $(ACR_NAME).azurecr.io/$(IMAGE_NAME):latest
+
+# Step 6: Push Docker image to ACR
+- task: Docker@2
+  inputs:
+    command: push
+    tags: |
+      $(ACR_NAME).azurecr.io/$(IMAGE_NAME):$(TAG)
+      $(ACR_NAME).azurecr.io/$(IMAGE_NAME):latest
