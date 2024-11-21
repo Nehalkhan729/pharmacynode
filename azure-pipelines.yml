@@ -1,52 +1,43 @@
-jobs:
+trigger:
+- main  # Replace 'main' with your branch name
+
+pool:
+  name: 'Default'  # Specify the Default agent pool name
+
+variables:
+  ACR_NAME: 'aksrg'  # Replace with your ACR name (without .azurecr.io)
+  IMAGE_NAME: 'pharma'
+  TAG: $(Build.BuildId)  # Use build ID for tagging images
+
+stages:
+- stage: BuildAndPush
+  displayName: 'Build and Push Node.js Docker Image'
+  jobs:
   - job: Build
-    displayName: 'Build and Push Node.js Docker Image'
-    pool:
-      name: 'Default'
-
-    variables:
-      # Replace with your ACR name (without .azurecr.io)
-      ACR_NAME: 'aksrg'
-      IMAGE_NAME: 'pharma'
-      TAG: $(Build.BuildId)  # Use build ID for tagging images
-
+    displayName: 'Build and Push Job'
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout source code
       - task: Checkout@1
 
-      # Step 2: Set up Node.js
+      # Step 2: Set up Node.js environment
       - task: UseNode@1
         inputs:
-          version: '16.x'  # Specify Node.js version
+          version: '16.x'  # Specify the required Node.js version
 
-      # Step 3: Install dependencies and build
+      # Step 3: Install dependencies and build project
       - script: |
           npm install
           npm run build
         displayName: 'Install dependencies and build'
 
-      # Step 4: Log in to Azure Container Registry
+      # Step 4: Build and Push Docker image to ACR
       - task: Docker@2
+        displayName: 'Build and Push Docker Image'
         inputs:
-          command: login
-          containerRegistry: 'acr-serviceconnection'  # Your ACR service connection name
-
-      # Step 5: Build Docker image
-      - task: Docker@2
-        inputs:
-          command: build
-          containerRegistry: 'acr-serviceconnection'
-          repository: '$(ACR_NAME).azurecr.io/$(IMAGE_NAME)'  # Correct ACR repository path
-          Dockerfile: 'Dockerfile'  # Ensure this path is correct if your Dockerfile is in a subfolder
+          command: buildAndPush
+          containerRegistry: 'Acrserverconnection'  # Replace with your Azure service connection name
+          repository: '$(ACR_NAME).azurecr.io/$(IMAGE_NAME)'
+          Dockerfile: 'Dockerfile'  # Ensure the correct path if not in the root folder
           tags: |
-            $(ACR_NAME).azurecr.io/$(IMAGE_NAME):$(TAG)
-            $(ACR_NAME).azurecr.io/$(IMAGE_NAME):latest
-
-      # Step 6: Push Docker image to ACR
-      - task: Docker@2
-        inputs:
-          command: push
-          containerRegistry: 'acr-serviceconnection'
-          tags: |
-            $(ACR_NAME).azurecr.io/$(IMAGE_NAME):$(TAG)
-            $(ACR_NAME).azurecr.io/$(IMAGE_NAME):latest
+            $(TAG)
+            latest
