@@ -25,6 +25,12 @@ stages:
           - script: npm run build
             displayName: 'Build Project'
 
+          # Step 4: Grant Docker Permissions
+          - script: |
+              sudo usermod -aG docker $(whoami)
+              sudo chown $USER:$USER /var/run/docker.sock
+            displayName: 'Grant Docker Permissions'  
+
           # Step 4: Log in to Docker Hub
           - task: Docker@2
             inputs:
