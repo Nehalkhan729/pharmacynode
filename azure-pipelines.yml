@@ -24,3 +24,31 @@ stages:
 
           - script: npm run build
             displayName: 'Build Project'
+
+          # Step 4: Log in to Docker Hub
+          - task: Docker@2
+            inputs:
+              command: login
+              containerRegistry: 'Dockerconnection'  # Replace with your Docker Hub service connection name
+            displayName: 'Log in to Docker Hub'
+
+          # Step 5: Build the Docker image
+          - task: Docker@2
+            inputs:
+              command: build
+              Dockerfile: 'Dockerfile'  # Ensure the path to your Dockerfile is correct
+              repository: 'nehalkhan729/pharma'  # Replace with your Docker Hub repo
+              tags: |
+                $(Build.BuildId)
+                latest
+            displayName: 'Build Docker Image'
+
+          # Step 6: Push the Docker image to Docker Hub
+          - task: Docker@2
+            inputs:
+              command: push
+              repository: 'nehalkhan729/pharma'  # Replace with your Docker Hub repo
+              tags: |
+                $(Build.BuildId)
+                latest
+            displayName: 'Push Docker Image to Docker Hub'
