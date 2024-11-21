@@ -32,14 +32,14 @@ stages:
           npm run build
         displayName: 'Install dependencies and build project'
 
-      # Step 4: Build and Push Docker image to ACR
-      - task: Docker@2
-        displayName: 'Build and Push Docker Image'
-        inputs:
-          command: buildAndPush
-          containerRegistry: 'acrserviceconnect'  # Replace with your Azure service connection name
-          repository: '$(ACR_NAME).azurecr.io/$(IMAGE_NAME)'
-          Dockerfile: 'Dockerfile'  # Path to Dockerfile, adjust if not in the root
-          tags: |
-            $(TAG)
-            latest
+      # # Step 4: Build and Push Docker image to ACR
+      # - task: Docker@2
+      #   displayName: 'Build and Push Docker Image'
+      #   inputs:
+      #     command: buildAndPush
+      #     containerRegistry: 'acrserviceconnect'  # Replace with your Azure service connection name
+      #     repository: '$(ACR_NAME).azurecr.io/$(IMAGE_NAME)'
+      #     Dockerfile: 'Dockerfile'  # Path to Dockerfile, adjust if not in the root
+      #     tags: |
+      #       $(TAG)
+      #       latest
